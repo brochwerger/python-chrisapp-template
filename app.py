@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import json
 from pathlib import Path
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 from importlib.metadata import Distribution
@@ -22,6 +23,19 @@ parser.add_argument('-n', '--name', default='foo',
 parser.add_argument('-V', '--version', action='version',
                     version=f'%(prog)s {__version__}')
 
+try :
+    with open('flags.json') as fd:
+        flags = json.load(fd)
+
+    for f,v in flags.items():
+        helpmsg = v['help'].replace("%", "")
+        flag = "--"+f
+        if v['type'] == 'bool':
+            parser.add_argument(flag, help=helpmsg, dest=f, default=v['default'], action=v['action'])
+        else:
+            parser.add_argument(flag, help=helpmsg, dest=f, default=v['default'])
+except FileNotFoundError:
+    pass
 
 # documentation: https://fnndsc.github.io/chris_plugin/chris_plugin.html#chris_plugin
 @chris_plugin(
